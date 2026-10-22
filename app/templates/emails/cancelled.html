@@ -1,0 +1,10 @@
+{% extends "emails/_layout.html" %}
+
+{% block body %}
+<h1 style="margin:0 0 8px;font-family:Georgia,serif;font-weight:normal;font-size:26px;">Your booking is cancelled</h1>
+<p style="margin:0;color:#7a706a;line-height:1.6;">
+  {% if by_admin %}We're sorry, the studio had to cancel this appointment.{% endif %}
+  {% if booking.refunded %}Your {{ deposit }} deposit has been refunded. It can take 5–10 days to appear on your statement.
+  {% else %}As this was within {{ studio.FREE_CANCEL_HOURS }} hours of the appointment, the deposit isn't refundable.{% endif %}
+</p>
+{% endblock %}
