@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard · {{ studio.NAME }}{% endblock %}
+{% block width %}wide{% endblock %}
+{% block nav %}
+<form method="post" action="{{ url_for('admin.logout') }}">
+  <button class="btn ghost small" type="submit">Log out</button>
+</form>
+{% endblock %}
+
+{% block content %}
+<h1>Dashboard</h1>
+
+<section class="stats section">
+  <div class="card stat">
+    <div class="label">Today</div>
+    <div class="value">{{ today | length }}</div>
+  </div>
+  <div class="card stat">
+    <div class="label">Upcoming</div>
+    <div class="value">{{ upcoming | length }}</div>
+  </div>
+  <div class="card stat">
+    <div class="label">Deposits this week</div>
+    <div class="value">{{ euros(deposits_cents) }}</div>
+  </div>
+</section>
+
+<section class="section">
+  <h2 class="section-title">Today</h2>
+  <div class="card">
+    {% if today %}
+    <div class="timeline">
+      {% for b in today %}
+      <div class="slot-row">
+        <span class="time-label">{{ b.start | local('%H:%M') }}</span>
+        <span>{{ b.name }} <span class="muted">· {{ b.service_name }}, {{ b.minutes }} min</span></span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty">Nothing booked today.</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section">
+  <h2 class="section-title">Upcoming</h2>
+  <div class="card table-wrap">
+    {% if upcoming %}
+    <table>
+      <thead>
+        <tr><th>When</th><th>Client</th><th>Treatment</th><th>Paid</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for b in upcoming %}
+        <tr>
+          <td class="num">{{ b.start | local('%a %-d %b, %H:%M') }}</td>
+          <td>{{ b.name }}<div class="muted small">{{ b.email }}</div></td>
+          <td>{{ b.service_name }}</td>
+          <td class="num">{{ euros(b.deposit_cents) }}</td>
+          <td>
+            <form method="post" action="{{ url_for('admin.cancel', booking_id=b._id) }}"
+                  onsubmit="return confirm('Cancel this booking and refund the deposit?')">
+              <button class="btn ghost small" type="submit">Cancel</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty">No upcoming bookings yet.</p>
+    {% endif %}
+  </div>
+</section>
+
+{% if cancellations %}
+<section class="section">
+  <h2 class="section-title">Cancelled this week</h2>
+  <div class="card table-wrap">
+    <table>
+      <thead>
+        <tr><th>Was booked for</th><th>Client</th><th>Treatment</th><th>Deposit</th></tr>
+      </thead>
+      <tbody>
+        {% for b in cancellations %}
+        <tr>
+          <td class="num">{{ b.start | local('%a %-d %b, %H:%M') }}</td>
+          <td>{{ b.name }}</td>
+          <td>{{ b.service_name }}</td>
+          <td>{% if b.refunded %}<span class="tag">Refunded</span>{% else %}<span class="tag ok">Kept</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+{% endblock %}
