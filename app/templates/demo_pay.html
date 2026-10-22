@@ -13,7 +13,7 @@
       <div class="summary-row"><span>{{ booking.service_name }}</span><span>{{ booking.start | local }}</span></div>
       <div class="summary-row"><span>Deposit</span><strong>{{ euros(booking.deposit_cents) }}</strong></div>
     </div>
-    <form method="post" style="margin-top: 22px">
+    <form method="post" style="margin-top: 16px">
       <button class="btn block" type="submit">Pay {{ euros(booking.deposit_cents) }}</button>
     </form>
     <p class="center" style="margin-top: 14px">

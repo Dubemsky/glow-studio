@@ -17,7 +17,7 @@
   {% endif %}
 
   <header class="topbar">
-    <div class="container {% block width %}{% endblock %}">
+    <div class="container">
       {{ brand() }}
       <nav class="topbar-actions">
         {% block header_actions %}
@@ -31,7 +31,7 @@
   {% block subnav %}{% endblock %}
 
   <main>
-    <div class="container {{ self.width() }}">
+    <div class="container">
       {% for message in get_flashed_messages() %}
       <div class="flash">{{ message }}</div>
       {% endfor %}
@@ -40,7 +40,7 @@
   </main>
 
   <footer>
-    <div class="container {{ self.width() }}">
+    <div class="container">
       <span>{{ studio.ADDRESS }}</span>
       <span>Tue–Sat, 9:00–18:00</span>
     </div>

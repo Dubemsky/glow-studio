@@ -19,7 +19,7 @@
 
   {% elif booking.status == 'confirmed' %}
   <h1>Your booking</h1>
-  <div class="card" style="margin-top: 24px">
+  <div class="card" style="margin-top: 16px">
     <div class="summary">
       <div class="summary-row"><span>Name</span><span>{{ booking.name }}</span></div>
       <div class="summary-row"><span>Treatment</span><span>{{ booking.service_name }}</span></div>
@@ -34,7 +34,7 @@
     {% else %}
     <p class="small">Your appointment is less than {{ studio.FREE_CANCEL_HOURS }} hours away, so the deposit won't be refunded if you cancel.</p>
     {% endif %}
-    <form method="post" style="margin-top: 18px" onsubmit="return confirm('Cancel this booking?')">
+    <form method="post" style="margin-top: 14px" onsubmit="return confirm('Cancel this booking?')">
       <button class="btn ghost block" type="submit">Cancel booking</button>
     </form>
     {% endif %}

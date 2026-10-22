@@ -5,64 +5,70 @@
 {% block content %}
 <a class="back" href="{{ url_for('public.index') }}#services">← All treatments</a>
 
-<div style="margin-top: 18px">
+<div class="hero">
   <h1>{{ service.name }}</h1>
   <p class="lead">{{ service.minutes }} min · {{ euros(service.price_cents) }} · {{ euros(studio.DEPOSIT_CENTS) }} deposit to book</p>
 </div>
 
-<section class="section">
-  <p class="step-label">1. Choose a day</p>
-  <div class="chips">
-    {% for d in days %}
-    <a class="chip {{ 'active' if d == day }}" href="{{ url_for('public.book', service_id=service.id, date=d.isoformat()) }}">
-      {{ d.strftime('%a') }}<strong>{{ d.day }}</strong>{{ d.strftime('%b') }}
-    </a>
-    {% endfor %}
-  </div>
-</section>
+<div class="book-layout">
+  <div>
+    <section class="section">
+      <p class="step-label">1. Choose a day</p>
+      <div class="chips">
+        {% for d in days %}
+        <a class="chip {{ 'active' if d == day }}" href="{{ url_for('public.book', service_id=service.id, date=d.isoformat()) }}">
+          {{ d.strftime('%a') }}<strong>{{ d.day }}</strong>{{ d.strftime('%b') }}
+        </a>
+        {% endfor %}
+      </div>
+    </section>
 
-<section class="section">
-  <p class="step-label">2. Choose a time</p>
-  {% if slots %}
-  <div class="times">
-    {% for slot in slots %}
-    {% set t = slot | local('%H:%M') %}
-    <a class="time {{ 'active' if chosen == slot }}" href="{{ url_for('public.book', service_id=service.id, date=day.isoformat(), time=t) }}#details">{{ t }}</a>
-    {% endfor %}
+    <section class="section">
+      <p class="step-label">2. Choose a time</p>
+      {% if slots %}
+      <div class="times">
+        {% for slot in slots %}
+        {% set t = slot | local('%H:%M') %}
+        <a class="time {{ 'active' if chosen == slot }}" href="{{ url_for('public.book', service_id=service.id, date=day.isoformat(), time=t) }}#details">{{ t }}</a>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="empty">No times left on this day. Try another day.</p>
+      {% endif %}
+    </section>
   </div>
-  {% else %}
-  <p class="empty">No times left on this day. Try another day.</p>
-  {% endif %}
-</section>
 
-{% if chosen %}
-<section class="section" id="details">
-  <p class="step-label">3. Your details</p>
-  <div class="card">
-    <div class="summary">
-      <div class="summary-row"><span>Treatment</span><span>{{ service.name }}</span></div>
-      <div class="summary-row"><span>When</span><span>{{ chosen | local }}</span></div>
-      <div class="summary-row"><span>Pay now</span><span>{{ euros(studio.DEPOSIT_CENTS) }} deposit</span></div>
-      <div class="summary-row"><span>Pay in studio</span><span>{{ euros(service.price_cents - studio.DEPOSIT_CENTS) }}</span></div>
+  <aside class="book-side" id="details">
+    <p class="step-label">3. Your details</p>
+    <div class="card">
+      {% if chosen %}
+      <div class="summary">
+        <div class="summary-row"><span>Treatment</span><span>{{ service.name }}</span></div>
+        <div class="summary-row"><span>When</span><span>{{ chosen | local('%a %-d %b, %H:%M') }}</span></div>
+        <div class="summary-row"><span>Pay now</span><span>{{ euros(studio.DEPOSIT_CENTS) }} deposit</span></div>
+        <div class="summary-row"><span>Pay in studio</span><span>{{ euros(service.price_cents - studio.DEPOSIT_CENTS) }}</span></div>
+      </div>
+      <hr class="divider">
+      <form method="post" action="{{ url_for('public.create_booking', service_id=service.id) }}">
+        <input type="hidden" name="date" value="{{ day.isoformat() }}">
+        <input type="hidden" name="time" value="{{ chosen | local('%H:%M') }}">
+        <div class="field">
+          <label for="name">Name</label>
+          <input id="name" name="name" autocomplete="name" required maxlength="80">
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="email" required maxlength="120">
+        </div>
+        <div class="field">
+          <button class="btn block" type="submit">Pay {{ euros(studio.DEPOSIT_CENTS) }} deposit</button>
+        </div>
+        <p class="muted small center" style="margin-top: 10px">Free cancellation up to {{ studio.FREE_CANCEL_HOURS }} hours before.</p>
+      </form>
+      {% else %}
+      <p class="placeholder">Pick a day and a time to continue.</p>
+      {% endif %}
     </div>
-    <hr class="divider">
-    <form method="post" action="{{ url_for('public.create_booking', service_id=service.id) }}">
-      <input type="hidden" name="date" value="{{ day.isoformat() }}">
-      <input type="hidden" name="time" value="{{ chosen | local('%H:%M') }}">
-      <div class="field">
-        <label for="name">Name</label>
-        <input id="name" name="name" autocomplete="name" required maxlength="80">
-      </div>
-      <div class="field">
-        <label for="email">Email</label>
-        <input id="email" name="email" type="email" autocomplete="email" required maxlength="120">
-      </div>
-      <div class="field" style="margin-top: 22px">
-        <button class="btn block" type="submit">Pay {{ euros(studio.DEPOSIT_CENTS) }} deposit</button>
-      </div>
-      <p class="muted small center" style="margin-top: 12px">Free cancellation up to {{ studio.FREE_CANCEL_HOURS }} hours before.</p>
-    </form>
-  </div>
-</section>
-{% endif %}
+  </aside>
+</div>
 {% endblock %}
