@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 
 {% block title %}Studio login · {{ studio.NAME }}{% endblock %}
-{% block nav %}{% endblock %}
+{% block header_actions %}{% endblock %}
 
 {% block content %}
 <div class="narrow">
   <div class="card">
     <h2>Studio login</h2>
+    <p class="muted small" style="margin-top: 6px">For Glow Studio staff.</p>
     <form method="post" style="margin-top: 20px">
       <div class="field">
         <label for="password">Password</label>

@@ -1,3 +1,4 @@
+{% from "_icons.html" import icon, brand with context %}
 <!doctype html>
 <html lang="en">
 <head>
@@ -15,12 +16,19 @@
   <div class="demo-bar">Demo mode: payments are simulated, no card is charged.</div>
   {% endif %}
 
-  <header>
+  <header class="topbar">
     <div class="container {% block width %}{% endblock %}">
-      <a class="logo" href="{{ url_for('public.index') }}">Glow <span>Studio</span></a>
-      {% block nav %}<a class="nav-link" href="{{ url_for('public.index') }}#services">Treatments</a>{% endblock %}
+      {{ brand() }}
+      <nav class="topbar-actions">
+        {% block header_actions %}
+        <a class="nav-link" href="{{ url_for('public.index') }}#services">Treatments</a>
+        <a class="btn ghost small" href="{{ url_for('public.find_bookings') }}">{{ icon('calendar', 16) }} My bookings</a>
+        {% endblock %}
+      </nav>
     </div>
   </header>
+
+  {% block subnav %}{% endblock %}
 
   <main>
     <div class="container {{ self.width() }}">

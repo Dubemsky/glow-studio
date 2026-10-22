@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon with context %}
+
+{% block width %}wide{% endblock %}
+
+{% block header_actions %}
+<span class="nav-link hide-mobile">Studio admin</span>
+<a class="btn ghost small" href="{{ url_for('public.index') }}" target="_blank" rel="noopener">{{ icon('external', 16) }} View site</a>
+<form method="post" action="{{ url_for('admin.logout') }}">
+  <button class="btn ghost small" type="submit">{{ icon('logout', 16) }} Log out</button>
+</form>
+{% endblock %}
+
+{% block subnav %}
+<div class="container wide">
+  <nav class="tabs-nav">
+    {% set endpoint = request.endpoint %}
+    <a class="nav-tab {{ 'active' if endpoint == 'admin.dashboard' }}" href="{{ url_for('admin.dashboard') }}">{{ icon('calendar') }} Bookings</a>
+    <a class="nav-tab {{ 'active' if endpoint == 'admin.overview' }}" href="{{ url_for('admin.overview') }}">{{ icon('chart') }} Overview</a>
+  </nav>
+</div>
+{% endblock %}
