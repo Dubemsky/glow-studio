@@ -38,7 +38,25 @@ def logout():
 @bp.get("/")
 @login_required
 def dashboard():
-    return render_template("admin/dashboard.html", **bookings.dashboard_stats())
+    tab = request.args.get("tab", "upcoming")
+    if tab not in bookings.ADMIN_TABS:
+        tab = "upcoming"
+    search = request.args.get("q", "").strip()[:80]
+    service_id = request.args.get("service", "")
+    return render_template(
+        "admin/bookings.html",
+        tab=tab,
+        search=search,
+        service_id=service_id,
+        items=bookings.admin_bookings(tab, search, service_id),
+        counts=bookings.admin_counts(),
+    )
+
+
+@bp.get("/overview")
+@login_required
+def overview():
+    return render_template("admin/overview.html", **bookings.overview())
 
 
 @bp.post("/bookings/<booking_id>/cancel")
@@ -47,4 +65,4 @@ def cancel(booking_id):
     booking = bookings.get_booking(booking_id) or abort(404)
     if bookings.cancel(booking, by_admin=True):
         flash(f"Cancelled {booking['name']}'s booking and refunded the deposit.")
-    return redirect(url_for("admin.dashboard"))
+    return redirect(request.referrer or url_for("admin.dashboard"))

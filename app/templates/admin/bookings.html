@@ -1,0 +1,76 @@
+{% extends "admin/base.html" %}
+{% from "_icons.html" import icon, page_head with context %}
+
+{% block title %}Bookings · {{ studio.NAME }}{% endblock %}
+
+{% block content %}
+{{ page_head('calendar', 'Bookings', 'Every appointment, its client and its deposit.') }}
+
+{% set labels = {'upcoming': 'Upcoming', 'today': 'Today', 'past': 'Past', 'cancelled': 'Cancelled'} %}
+<div class="panel">
+  <div class="subtabs">
+    {% for key, label in labels.items() %}
+    <a class="subtab {{ 'active' if tab == key }}" href="{{ url_for('admin.dashboard', tab=key, q=search or None, service=service_id or None) }}">
+      {{ label }} <span class="count">{{ counts[key] }}</span>
+    </a>
+    {% endfor %}
+  </div>
+
+  <form class="toolbar" method="get">
+    <input type="hidden" name="tab" value="{{ tab }}">
+    <label class="search">
+      {{ icon('search', 16) }}
+      <input name="q" value="{{ search }}" placeholder="Search by name or email" aria-label="Search">
+    </label>
+    <select name="service" onchange="this.form.submit()" aria-label="Treatment">
+      <option value="">All treatments</option>
+      {% for s in studio.SERVICES %}
+      <option value="{{ s.id }}" {{ 'selected' if s.id == service_id }}>{{ s.name }}</option>
+      {% endfor %}
+    </select>
+  </form>
+
+  {% if items %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Client</th><th>Treatment</th><th>When</th><th>Status</th><th class="right">Deposit</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for b in items %}
+        <tr>
+          <td>
+            <div class="client">
+              <span class="avatar">{{ b.name[:1] | upper }}</span>
+              <div><strong>{{ b.name }}</strong><div class="muted small">{{ b.email }}</div></div>
+            </div>
+          </td>
+          <td>{{ b.service_name }}<div class="muted small">{{ b.minutes }} min · {{ euros(b.price_cents) }}</div></td>
+          <td class="num">{{ b.start | local('%a %-d %b') }}<div class="muted small">{{ b.start | local('%H:%M') }}</div></td>
+          <td>
+            {% if b.status == 'cancelled' %}<span class="status off">Cancelled</span>
+            {% elif tab == 'past' %}<span class="status done">Completed</span>
+            {% else %}<span class="status on">Confirmed</span>{% endif %}
+          </td>
+          <td class="num right">
+            {{ euros(b.deposit_cents) }}
+            <div class="muted small">{% if b.refunded %}refunded{% elif b.status == 'cancelled' %}kept{% else %}paid{% endif %}</div>
+          </td>
+          <td class="right">
+            {% if tab in ('upcoming', 'today') %}
+            <form method="post" action="{{ url_for('admin.cancel', booking_id=b._id) }}" onsubmit="return confirm('Cancel this booking and refund the deposit?')">
+              <button class="btn ghost small" type="submit">Cancel</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="panel-foot">{{ items | length }} booking{{ '' if items | length == 1 else 's' }}</div>
+  {% else %}
+  <p class="empty panel-pad">{% if search or service_id %}No bookings match your search.{% else %}Nothing here yet.{% endif %}</p>
+  {% endif %}
+</div>
+{% endblock %}

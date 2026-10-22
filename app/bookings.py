@@ -1,3 +1,4 @@
+import re
 import secrets
 from datetime import datetime, timedelta
 
@@ -211,20 +212,45 @@ def send_reminders():
         notify.reminder(booking)
 
 
-def dashboard_stats():
-    db = get_db()
-    now = utcnow()
-    local_now = to_local(now)
-    today_start = to_utc(local_now.replace(hour=0, minute=0, second=0, microsecond=0))
-    week_start = today_start - timedelta(days=local_now.weekday())
+def _day_bounds(local_dt):
+    start = to_utc(local_dt.replace(hour=0, minute=0, second=0, microsecond=0))
+    return start, start + timedelta(days=1)
 
-    confirmed = {"status": "confirmed"}
-    today = list(
-        db.bookings.find(
-            {**confirmed, "start": {"$gte": today_start, "$lt": today_start + timedelta(days=1)}}
-        ).sort("start", 1)
-    )
-    upcoming = list(db.bookings.find({**confirmed, "start": {"$gte": now}}).sort("start", 1))
+
+ADMIN_TABS = ["upcoming", "today", "past", "cancelled"]
+
+
+def _tab_query(tab):
+    now = utcnow()
+    if tab == "today":
+        start, end = _day_bounds(to_local(now))
+        return {"status": "confirmed", "start": {"$gte": start, "$lt": end}}, 1
+    if tab == "past":
+        return {"status": "confirmed", "start": {"$lt": now}}, -1
+    if tab == "cancelled":
+        return {"status": "cancelled"}, -1
+    return {"status": "confirmed", "start": {"$gte": now}}, 1
+
+
+def admin_bookings(tab, search="", service_id=""):
+    query, order = _tab_query(tab)
+    if service_id:
+        query["service_id"] = service_id
+    if search:
+        pattern = {"$regex": re.escape(search), "$options": "i"}
+        query["$or"] = [{"name": pattern}, {"email": pattern}]
+    return list(get_db().bookings.find(query).sort("start", order))
+
+
+def admin_counts():
+    return {tab: get_db().bookings.count_documents(_tab_query(tab)[0]) for tab in ADMIN_TABS}
+
+
+def overview():
+    db = get_db()
+    local_now = to_local(utcnow())
+    today_start, _ = _day_bounds(local_now)
+    week_start = today_start - timedelta(days=local_now.weekday())
 
     deposits = sum(
         b["deposit_cents"]
@@ -232,13 +258,24 @@ def dashboard_stats():
             {"confirmed_at": {"$gte": week_start}, "refunded": False, "status": {"$in": ["confirmed", "cancelled"]}}
         )
     )
-    recent_cancellations = list(
-        db.bookings.find({"status": "cancelled", "cancelled_at": {"$gte": week_start}}).sort("cancelled_at", -1)
-    )
+
+    week = []
+    for offset in range(7):
+        day = local_now + timedelta(days=offset)
+        start, end = _day_bounds(day)
+        items = list(db.bookings.find({"status": "confirmed", "start": {"$gte": start, "$lt": end}}).sort("start", 1))
+        week.append({"date": day.date(), "bookings": items, "open": day.weekday() in studio.OPEN_DAYS})
 
     return {
-        "today": today,
-        "upcoming": upcoming,
+        "today": week[0]["bookings"],
+        "week": week,
+        "upcoming_count": admin_counts()["upcoming"],
         "deposits_cents": deposits,
-        "cancellations": recent_cancellations,
+        "cancelled_this_week": db.bookings.count_documents({"status": "cancelled", "cancelled_at": {"$gte": week_start}}),
     }
+
+
+def bookings_for_email(email):
+    return list(
+        get_db().bookings.find({"email": email, "status": {"$in": ["confirmed", "cancelled"]}}).sort("start", -1)
+    )

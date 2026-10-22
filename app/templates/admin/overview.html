@@ -1,0 +1,43 @@
+{% extends "admin/base.html" %}
+{% from "_icons.html" import icon, page_head with context %}
+
+{% block title %}Overview · {{ studio.NAME }}{% endblock %}
+
+{% block content %}
+{{ page_head('chart', 'Overview', 'How the studio is doing this week.') }}
+
+<section class="stats">
+  <div class="card stat"><div class="label">Today</div><div class="value">{{ today | length }}</div></div>
+  <div class="card stat"><div class="label">Upcoming</div><div class="value">{{ upcoming_count }}</div></div>
+  <div class="card stat"><div class="label">Deposits this week</div><div class="value">{{ euros(deposits_cents) }}</div></div>
+  <div class="card stat"><div class="label">Cancelled this week</div><div class="value">{{ cancelled_this_week }}</div></div>
+</section>
+
+<div class="panel section">
+  <div class="panel-title"><h2>Next 7 days</h2></div>
+  <div class="week">
+    {% for day in week %}
+    <div class="week-day">
+      <div class="week-date">
+        <strong>{{ 'Today' if loop.first else day.date.strftime('%a') }}</strong>
+        <span class="muted small">{{ day.date.strftime('%-d %b') }}</span>
+      </div>
+      <div class="week-items">
+        {% if not day.open %}
+        <span class="muted small">Closed</span>
+        {% elif not day.bookings %}
+        <span class="muted small">No bookings</span>
+        {% else %}
+        {% for b in day.bookings %}
+        <div class="slot-row">
+          <span class="time-label">{{ b.start | local('%H:%M') }}</span>
+          <span>{{ b.name }} <span class="muted">· {{ b.service_name }}</span></span>
+        </div>
+        {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
