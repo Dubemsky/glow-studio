@@ -1,0 +1,14 @@
+{% extends "emails/_layout.html" %}
+
+{% block body %}
+<h1 style="margin:0 0 8px;font-family:Georgia,serif;font-weight:normal;font-size:26px;">You're booked, {{ booking.name.split()[0] }}</h1>
+<p style="margin:0;color:#7a706a;line-height:1.6;">Your {{ deposit }} deposit is paid. The remaining {{ balance }} is paid in the studio.</p>
+{% endblock %}
+
+{% block footer %}
+<a href="{{ calendar_url }}" style="display:inline-block;background:#a8634f;color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:999px;font-size:14px;">Add to calendar</a>
+<p style="margin:24px 0 0;font-size:13px;color:#7a706a;line-height:1.6;">
+  Plans changed? <a href="{{ cancel_url }}" style="color:#a8634f;">Cancel your booking</a>.
+  Cancel at least {{ studio.FREE_CANCEL_HOURS }} hours before and your deposit is refunded automatically.
+</p>
+{% endblock %}

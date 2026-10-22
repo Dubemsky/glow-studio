@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<body style="margin:0;padding:32px 16px;background:#faf7f2;font-family:Helvetica,Arial,sans-serif;color:#2b2522;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+    <tr><td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border:1px solid #ebe4dc;border-radius:14px;">
+        <tr><td style="padding:32px;">
+          <p style="margin:0 0 24px;font-family:Georgia,serif;font-size:20px;">Glow <span style="color:#a8634f;">Studio</span></p>
+          {% block body %}{% endblock %}
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0;border-top:1px solid #ebe4dc;border-bottom:1px solid #ebe4dc;font-size:15px;">
+            <tr><td style="padding:14px 0 6px;color:#7a706a;">Treatment</td><td align="right" style="padding:14px 0 6px;">{{ booking.service_name }}</td></tr>
+            <tr><td style="padding:6px 0;color:#7a706a;">When</td><td align="right" style="padding:6px 0;">{{ when }}</td></tr>
+            <tr><td style="padding:6px 0 14px;color:#7a706a;">Where</td><td align="right" style="padding:6px 0 14px;">{{ studio.ADDRESS }}</td></tr>
+          </table>
+          {% block footer %}{% endblock %}
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
