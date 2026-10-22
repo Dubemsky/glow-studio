@@ -126,3 +126,27 @@ def test_admin(client, app):
     assert client.get("/admin/").status_code == 302
     client.post("/admin/login", data={"password": app.config["ADMIN_PASSWORD"]})
     assert client.get("/admin/").status_code == 200
+
+
+def test_find_my_bookings(client):
+    service, day, start = first_slot()
+    bookings.confirm(bookings.create_pending(service, start, "A", "a@example.com")["_id"], "demo_1")
+
+    page = client.post("/my-bookings", data={"email": "a@example.com"}).get_data(as_text=True)
+    link = page.split('href="http://localhost')[1].split('"')[0].split('/', 1)[1]
+    assert "Facial" in client.get(link).get_data(as_text=True)
+
+    page = client.post("/my-bookings", data={"email": "nobody@example.com"}).get_data(as_text=True)
+    assert "Check your inbox" in page and "Open my bookings" not in page
+    assert client.get("/my-bookings/forged-token").status_code == 302
+
+
+def test_admin_tabs_and_search(client, app):
+    service, day, start = first_slot()
+    bookings.confirm(bookings.create_pending(service, start, "Aoife Byrne", "a@example.com")["_id"], "demo_1")
+    client.post("/admin/login", data={"password": app.config["ADMIN_PASSWORD"]})
+
+    assert "Aoife Byrne" in client.get("/admin/?q=aoife").get_data(as_text=True)
+    assert "Aoife Byrne" not in client.get("/admin/?q=ciara").get_data(as_text=True)
+    assert "Aoife Byrne" not in client.get("/admin/?service=massage").get_data(as_text=True)
+    assert client.get("/admin/overview").status_code == 200
