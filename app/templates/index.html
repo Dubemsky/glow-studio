@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section>
+  <p class="eyebrow">Dublin 2</p>
+  <h1>Calm, unhurried treatments<br>in the heart of the city.</h1>
+  <p class="lead">Choose a treatment, pick a time that suits you and secure it with a small deposit. It takes less than a minute.</p>
+</section>
+
+<section class="section" id="services">
+  <h2 class="section-title">Treatments</h2>
+  <div class="services">
+    {% for service in studio.SERVICES %}
+    <div class="card service">
+      <div>
+        <h3>{{ service.name }}</h3>
+        <p class="muted small">{{ service.description }}</p>
+        <p class="meta">{{ service.minutes }} min · {{ euros(service.price_cents) }}</p>
+      </div>
+      <a class="btn" href="{{ url_for('public.book', service_id=service.id) }}">Book</a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="section info-row">
+  <div class="card">
+    <h3>{{ euros(studio.DEPOSIT_CENTS) }} deposit</h3>
+    <p class="muted small">Paid online to hold your time. The rest is paid in the studio.</p>
+  </div>
+  <div class="card">
+    <h3>Free cancellation</h3>
+    <p class="muted small">Cancel up to {{ studio.FREE_CANCEL_HOURS }} hours before and your deposit is refunded automatically.</p>
+  </div>
+  <div class="card">
+    <h3>Reminder included</h3>
+    <p class="muted small">We'll email you the day before so you don't forget.</p>
+  </div>
+</section>
+{% endblock %}

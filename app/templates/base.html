@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ studio.NAME }}{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  {% if demo_payments %}
+  <div class="demo-bar">Demo mode: payments are simulated, no card is charged.</div>
+  {% endif %}
+
+  <header>
+    <div class="container {% block width %}{% endblock %}">
+      <a class="logo" href="{{ url_for('public.index') }}">Glow <span>Studio</span></a>
+      {% block nav %}<a class="nav-link" href="{{ url_for('public.index') }}#services">Treatments</a>{% endblock %}
+    </div>
+  </header>
+
+  <main>
+    <div class="container {{ self.width() }}">
+      {% for message in get_flashed_messages() %}
+      <div class="flash">{{ message }}</div>
+      {% endfor %}
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <footer>
+    <div class="container {{ self.width() }}">
+      <span>{{ studio.ADDRESS }}</span>
+      <span>Tue–Sat, 9:00–18:00</span>
+    </div>
+  </footer>
+</body>
+</html>
