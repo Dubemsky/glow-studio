@@ -3,9 +3,11 @@ from datetime import date, datetime
 
 from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, url_for
 
-from .. import bookings, payments, studio
+from itsdangerous import BadSignature, URLSafeTimedSerializer
+
+from .. import bookings, notify, payments, studio
 from ..db import get_db
-from ..timeutils import to_local, utcnow
+from ..timeutils import site_url, to_local, utcnow
 
 bp = Blueprint("public", __name__)
 
@@ -132,6 +134,43 @@ def cancel(token):
         refundable=bookings.refund_eligible(booking),
         past=booking["start"] <= utcnow(),
     )
+
+
+def _link_serializer():
+    return URLSafeTimedSerializer(current_app.config["SECRET_KEY"], salt="my-bookings")
+
+
+@bp.route("/my-bookings", methods=["GET", "POST"])
+def find_bookings():
+    sent, demo_link = False, None
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()[:120]
+        if not EMAIL_RE.match(email):
+            flash("Please enter a valid email address.")
+            return redirect(url_for("public.find_bookings"))
+        # Same reply either way, so the page never reveals who has booked.
+        if bookings.bookings_for_email(email):
+            link = site_url() + url_for("public.my_bookings", token=_link_serializer().dumps(email))
+            notify.bookings_link(email, link)
+            if not current_app.config["RESEND_API_KEY"]:
+                demo_link = link
+        sent = True
+    return render_template("find_bookings.html", sent=sent, demo_link=demo_link)
+
+
+@bp.get("/my-bookings/<token>")
+def my_bookings(token):
+    try:
+        email = _link_serializer().loads(token, max_age=3600)
+    except BadSignature:
+        flash("That link has expired. Enter your email to get a new one.")
+        return redirect(url_for("public.find_bookings"))
+
+    now = utcnow()
+    items = bookings.bookings_for_email(email)
+    upcoming = sorted((b for b in items if b["status"] == "confirmed" and b["start"] >= now), key=lambda b: b["start"])
+    past = [b for b in items if b not in upcoming]
+    return render_template("my_bookings.html", email=email, upcoming=upcoming, past=past)
 
 
 @bp.post("/stripe/webhook")

@@ -2,13 +2,13 @@ import requests
 from flask import current_app, render_template
 
 from . import studio
-from .timeutils import fmt_datetime, fmt_euros
+from .timeutils import fmt_datetime, fmt_euros, site_url
 
 outbox = []
 
 
 def _cancel_url(booking):
-    return f"{current_app.config['BASE_URL']}/cancel/{booking['cancel_token']}"
+    return f"{site_url()}/cancel/{booking['cancel_token']}"
 
 
 def calendar_url(booking):
@@ -80,3 +80,7 @@ def booking_cancelled(booking, by_admin):
 def reminder(booking):
     ctx = _context(booking)
     send_email(booking["email"], f"Reminder: {booking['service_name']}, {ctx['when']}", "reminder", **ctx)
+
+
+def bookings_link(email, url):
+    send_email(email, f"Your bookings at {studio.NAME}", "my_bookings", url=url, studio=studio)

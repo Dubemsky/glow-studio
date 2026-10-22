@@ -7,7 +7,7 @@ load_dotenv()
 
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-change-me")
-    BASE_URL = os.getenv("BASE_URL", "http://localhost:5000").rstrip("/")
+    BASE_URL = os.getenv("BASE_URL", "").rstrip("/")
 
     MONGO_URI = os.getenv("MONGO_URI", "")
     MONGO_DB = os.getenv("MONGO_DB", "glow_studio")

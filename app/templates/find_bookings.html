@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon, page_head with context %}
+
+{% block title %}My bookings · {{ studio.NAME }}{% endblock %}
+
+{% block content %}
+<div class="narrow">
+  {{ page_head('calendar', 'My bookings', 'See or cancel your appointments.') }}
+
+  <div class="card">
+    {% if sent %}
+    <div class="center">
+      <div class="status-icon neutral">{{ icon('mail', 24) }}</div>
+      <h2>Check your inbox</h2>
+      <p class="muted" style="margin-top: 8px">If there are bookings under that email, we've sent you a link to see them. It works for one hour.</p>
+      {% if demo_link %}
+      <div class="demo-note">
+        <p class="small">Demo mode: emails aren't sent, so here's the link.</p>
+        <a class="btn" href="{{ demo_link }}">Open my bookings</a>
+      </div>
+      {% endif %}
+    </div>
+    {% else %}
+    <p class="muted small">Enter the email you booked with and we'll send you a link. No account or password needed.</p>
+    <form method="post" style="margin-top: 18px">
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" autocomplete="email" required maxlength="120" autofocus>
+      </div>
+      <div class="field" style="margin-top: 18px">
+        <button class="btn block" type="submit">Send me a link</button>
+      </div>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

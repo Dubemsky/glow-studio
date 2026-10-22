@@ -5,7 +5,7 @@ import stripe
 from flask import current_app, url_for
 
 from . import studio
-from .timeutils import fmt_datetime
+from .timeutils import fmt_datetime, site_url
 
 
 def enabled():
@@ -18,7 +18,7 @@ def _client():
 
 
 def create_checkout(booking):
-    base = current_app.config["BASE_URL"]
+    base = site_url()
     session = _client().checkout.Session.create(
         mode="payment",
         customer_email=booking["email"],
