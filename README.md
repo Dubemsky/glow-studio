@@ -14,13 +14,14 @@ Online booking and deposits for a small beauty and wellness studio. Customers pi
 - **Emails**: confirmation, 24-hour reminder and cancellation (Resend)
 - **Slack alerts** for new bookings and cancellations
 - **Add to calendar** link
-- **Owner dashboard**: today's schedule, upcoming bookings, deposits this week, one-click cancel and refund
+- **Find my booking**: customers enter their email and get a one-hour link listing their bookings, no account needed
+- **Owner dashboard**: bookings by tab (upcoming, today, past, cancelled) with search and filters, a weekly overview, and one-click cancel and refund
 - **Demo mode**: runs with no keys at all, simulating payments, emails and Slack
 
 | | |
 |---|---|
-| ![Home](docs/home.png) | ![Dashboard](docs/dashboard.png) |
-| ![Confirmed](docs/confirmed.png) | ![Mobile](docs/mobile.png) |
+| ![Dashboard](docs/dashboard.png) | ![Overview](docs/overview.png) |
+| ![Confirmed](docs/confirmed.png) | ![My bookings](docs/my-bookings.png) |
 
 ## Tech
 
@@ -35,7 +36,7 @@ cp .env.example .env
 flask --app wsgi run
 ```
 
-Open http://localhost:5000. With no keys set it runs in demo mode with sample bookings. The dashboard is at `/admin` (password `demo` unless you set `ADMIN_PASSWORD`).
+Open http://localhost:5000 (or run `python3 main.py` for http://localhost:5001). With no keys set it runs in demo mode with sample bookings. The dashboard is at `/admin` (password `demo` unless you set `ADMIN_PASSWORD`).
 
 Run the tests with `pytest`.
 
@@ -50,7 +51,7 @@ All settings live in environment variables (see `.env.example`).
 | `STRIPE_WEBHOOK_SECRET` | Stripe dashboard → Developers → Webhooks, after adding the endpoint below |
 | `RESEND_API_KEY` | resend.com → API Keys |
 | `SLACK_WEBHOOK_URL` | Slack → Apps → Incoming Webhooks |
-| `BASE_URL` | Your live site address, used in email links |
+| `BASE_URL` | Your live site address, used in email links (optional locally) |
 | `SECRET_KEY`, `ADMIN_PASSWORD` | Any long random strings you choose |
 
 Stripe webhook endpoint: `https://<your-site>/stripe/webhook`, listening for `checkout.session.completed` and `checkout.session.expired`.
