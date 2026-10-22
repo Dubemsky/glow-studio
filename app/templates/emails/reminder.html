@@ -1,0 +1,12 @@
+{% extends "emails/_layout.html" %}
+
+{% block body %}
+<h1 style="margin:0 0 8px;font-family:Georgia,serif;font-weight:normal;font-size:26px;">See you soon, {{ booking.name.split()[0] }}</h1>
+<p style="margin:0;color:#7a706a;line-height:1.6;">A quick reminder of your appointment. Please arrive a few minutes early.</p>
+{% endblock %}
+
+{% block footer %}
+<p style="margin:0;font-size:13px;color:#7a706a;line-height:1.6;">
+  Can't make it? <a href="{{ cancel_url }}" style="color:#a8634f;">Manage your booking</a>.
+</p>
+{% endblock %}
