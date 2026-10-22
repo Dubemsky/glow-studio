@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Your booking · {{ studio.NAME }}{% endblock %}
+
+{% block head %}
+{% if booking.status == 'pending' %}<meta http-equiv="refresh" content="3">{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="narrow center">
+  {% if booking.status == 'confirmed' %}
+  <div class="status-icon">✓</div>
+  <h1>You're booked</h1>
+  <p class="lead">A confirmation is on its way to {{ booking.email }}.</p>
+
+  <div class="card" style="margin-top: 28px; text-align: left">
+    <div class="summary">
+      <div class="summary-row"><span>Treatment</span><span>{{ booking.service_name }}</span></div>
+      <div class="summary-row"><span>When</span><span>{{ booking.start | local }}</span></div>
+      <div class="summary-row"><span>Where</span><span>{{ studio.ADDRESS }}</span></div>
+      <div class="summary-row"><span>Deposit paid</span><span>{{ euros(booking.deposit_cents) }}</span></div>
+      <div class="summary-row"><span>Pay in studio</span><span>{{ euros(booking.price_cents - booking.deposit_cents) }}</span></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <a class="btn" href="{{ calendar_url(booking) }}" target="_blank" rel="noopener">Add to calendar</a>
+    <a class="btn ghost" href="{{ url_for('public.cancel', token=booking.cancel_token) }}">Manage booking</a>
+  </div>
+
+  {% elif booking.status == 'pending' %}
+  <div class="status-icon neutral">…</div>
+  <h1>Confirming your payment</h1>
+  <p class="lead">This usually takes a few seconds.</p>
+
+  {% else %}
+  <div class="status-icon neutral">!</div>
+  <h1>This booking isn't active</h1>
+  <p class="lead">
+    {% if booking.refunded %}Your deposit has been refunded.{% else %}The time was released before payment was completed.{% endif %}
+  </p>
+  <div class="actions">
+    <a class="btn" href="{{ url_for('public.book', service_id=booking.service_id) }}">Book again</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

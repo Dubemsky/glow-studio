@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Payment · {{ studio.NAME }}{% endblock %}
+
+{% block content %}
+<div class="narrow">
+  <div class="card">
+    <p class="eyebrow">Demo checkout</p>
+    <h2>Pay your deposit</h2>
+    <p class="muted small" style="margin-top: 8px">Stripe isn't connected yet, so this page stands in for Stripe Checkout. No card is charged.</p>
+    <hr class="divider">
+    <div class="summary">
+      <div class="summary-row"><span>{{ booking.service_name }}</span><span>{{ booking.start | local }}</span></div>
+      <div class="summary-row"><span>Deposit</span><strong>{{ euros(booking.deposit_cents) }}</strong></div>
+    </div>
+    <form method="post" style="margin-top: 22px">
+      <button class="btn block" type="submit">Pay {{ euros(booking.deposit_cents) }}</button>
+    </form>
+    <p class="center" style="margin-top: 14px">
+      <a class="back" href="{{ url_for('public.checkout_cancelled', token=booking.cancel_token) }}">Cancel and go back</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
