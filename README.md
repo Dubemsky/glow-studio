@@ -56,7 +56,7 @@ All settings live in environment variables (see `.env.example`).
 
 Stripe webhook endpoint: `https://<your-site>/stripe/webhook`, listening for `checkout.session.completed` and `checkout.session.expired`.
 
-To test webhooks locally: `stripe listen --forward-to localhost:5000/stripe/webhook`.
+To test webhooks locally: `stripe listen --events checkout.session.completed,checkout.session.expired --forward-to localhost:5001/stripe/webhook`, then copy the `whsec_...` it prints into `STRIPE_WEBHOOK_SECRET`.
 
 Pay with Stripe's test card `4242 4242 4242 4242`, any future date and any CVC.
 
