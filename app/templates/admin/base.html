@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% block main_class %}fit{% endblock %}
 {% from "_icons.html" import icon with context %}
 
 {% block header_actions %}
@@ -10,7 +11,7 @@
 {% endblock %}
 
 {% block subnav %}
-<div class="container">
+<div class="container subnav">
   <nav class="tabs-nav">
     {% set endpoint = request.endpoint %}
     <a class="nav-tab {{ 'active' if endpoint == 'admin.dashboard' }}" href="{{ url_for('admin.dashboard') }}">{{ icon('calendar') }} Bookings</a>

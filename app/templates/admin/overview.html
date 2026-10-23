@@ -13,9 +13,9 @@
   <div class="card stat"><div class="label">Cancelled this week</div><div class="value">{{ cancelled_this_week }}</div></div>
 </section>
 
-<div class="panel section">
+<div class="panel fill" style="margin-top: 14px">
   <div class="panel-title"><h2>Next 7 days</h2></div>
-  <div class="week">
+  <div class="week scroll">
     {% for day in week %}
     <div class="week-day">
       <div class="week-date">

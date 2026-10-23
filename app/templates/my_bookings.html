@@ -19,23 +19,25 @@
 </div>
 {% endmacro %}
 
+{% block main_class %}fit{% endblock %}
+
 {% block content %}
-<div class="narrow">
+<div class="narrow fill">
   {{ page_head('calendar', 'My bookings', email) }}
 
-  <div class="panel">
-    <div class="panel-title"><h2>Upcoming</h2></div>
-    {% for b in upcoming %}{{ booking_row(b, true) }}{% else %}
-    <p class="empty panel-pad">No upcoming bookings.</p>
-    {% endfor %}
-  </div>
+  <div class="panel fill">
+    <div class="scroll">
+      <div class="panel-title"><h2>Upcoming</h2></div>
+      {% for b in upcoming %}{{ booking_row(b, true) }}{% else %}
+      <p class="empty panel-pad">No upcoming bookings.</p>
+      {% endfor %}
 
-  {% if past %}
-  <div class="panel section">
-    <div class="panel-title"><h2>Past and cancelled</h2></div>
-    {% for b in past %}{{ booking_row(b, false) }}{% endfor %}
+      {% if past %}
+      <div class="panel-title panel-title-split"><h2>Past and cancelled</h2></div>
+      {% for b in past %}{{ booking_row(b, false) }}{% endfor %}
+      {% endif %}
+    </div>
   </div>
-  {% endif %}
 
   <div class="actions">
     <a class="btn" href="{{ url_for('public.index') }}#services">Book a treatment</a>

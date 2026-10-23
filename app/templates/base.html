@@ -30,7 +30,7 @@
 
   {% block subnav %}{% endblock %}
 
-  <main>
+  <main class="{% block main_class %}{% endblock %}">
     <div class="container">
       {% for message in get_flashed_messages() %}
       <div class="flash">{{ message }}</div>

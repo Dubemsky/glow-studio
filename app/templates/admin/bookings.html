@@ -7,7 +7,7 @@
 {{ page_head('calendar', 'Bookings', 'Every appointment, its client and its deposit.') }}
 
 {% set labels = {'upcoming': 'Upcoming', 'today': 'Today', 'past': 'Past', 'cancelled': 'Cancelled'} %}
-<div class="panel">
+<div class="panel fill">
   <div class="subtabs">
     {% for key, label in labels.items() %}
     <a class="subtab {{ 'active' if tab == key }}" href="{{ url_for('admin.dashboard', tab=key, q=search or None, service=service_id or None) }}">
@@ -31,7 +31,7 @@
   </form>
 
   {% if items %}
-  <div class="table-wrap">
+  <div class="scroll">
     <table>
       <thead>
         <tr><th>Client</th><th>Treatment</th><th>When</th><th>Status</th><th class="right">Deposit</th><th></th></tr>
@@ -70,7 +70,7 @@
   </div>
   <div class="panel-foot">{{ items | length }} booking{{ '' if items | length == 1 else 's' }}</div>
   {% else %}
-  <p class="empty panel-pad">{% if search or service_id %}No bookings match your search.{% else %}Nothing here yet.{% endif %}</p>
+  <p class="empty panel-pad scroll">{% if search or service_id %}No bookings match your search.{% else %}Nothing here yet.{% endif %}</p>
   {% endif %}
 </div>
 {% endblock %}
