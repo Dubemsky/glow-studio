@@ -55,6 +55,14 @@ def parse_webhook(payload, signature):
     return json.loads(payload)
 
 
+def paid_intent(session_id):
+    """Ask Stripe directly whether a checkout was paid. Returns the payment intent, or None."""
+    if not session_id or not enabled():
+        return None
+    session = _client().checkout.Session.retrieve(session_id)
+    return session.payment_intent if session.payment_status == "paid" else None
+
+
 def refund(payment_intent):
     if not payment_intent or not enabled() or payment_intent.startswith("demo_"):
         return

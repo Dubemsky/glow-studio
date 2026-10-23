@@ -150,3 +150,16 @@ def test_admin_tabs_and_search(client, app):
     assert "Aoife Byrne" not in client.get("/admin/?q=ciara").get_data(as_text=True)
     assert "Aoife Byrne" not in client.get("/admin/?service=massage").get_data(as_text=True)
     assert client.get("/admin/overview").status_code == 200
+
+
+def test_success_page_checks_stripe_when_webhook_is_missing(client, monkeypatch):
+    service, day, start = first_slot()
+    booking = bookings.create_pending(service, start, "A", "a@example.com")
+    get_db().bookings.update_one({"_id": booking["_id"]}, {"$set": {"stripe_session_id": "cs_test_1"}})
+
+    from app import payments
+    monkeypatch.setattr(payments, "paid_intent", lambda session_id: "pi_1" if session_id == "cs_test_1" else None)
+
+    page = client.get(f"/booking/{booking['cancel_token']}").get_data(as_text=True)
+    assert "You&#39;re booked" in page or "You're booked" in page
+    assert get_db().bookings.find_one()["payment_intent"] == "pi_1"

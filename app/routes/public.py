@@ -108,6 +108,15 @@ def demo_pay(token):
 @bp.get("/booking/<token>")
 def success(token):
     booking = bookings.get_by_token(token) or abort(404)
+    if booking["status"] == "pending" and booking.get("stripe_session_id"):
+        # Backup for a slow or missed webhook: check with Stripe directly.
+        try:
+            intent = payments.paid_intent(booking["stripe_session_id"])
+        except Exception:
+            current_app.logger.exception("Couldn't check checkout session")
+            intent = None
+        if intent:
+            booking = bookings.confirm(booking["_id"], payment_intent=intent) or bookings.get_by_token(token)
     return render_template("success.html", booking=booking)
 
 
