@@ -63,6 +63,9 @@ def overview():
 @login_required
 def cancel(booking_id):
     booking = bookings.get_booking(booking_id) or abort(404)
-    if bookings.cancel(booking, by_admin=True):
+    updated = bookings.cancel(booking, by_admin=True)
+    if updated and updated.get("refund_failed"):
+        flash(f"Cancelled {booking['name']}'s booking, but the refund failed. Refund it manually in Stripe.")
+    elif updated:
         flash(f"Cancelled {booking['name']}'s booking and refunded the deposit.")
     return redirect(request.referrer or url_for("admin.dashboard"))

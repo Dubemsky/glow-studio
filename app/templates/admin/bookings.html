@@ -54,7 +54,7 @@
           </td>
           <td class="num right">
             {{ euros(b.deposit_cents) }}
-            <div class="muted small">{% if b.refunded %}refunded{% elif b.status == 'cancelled' %}kept{% else %}paid{% endif %}</div>
+            <div class="muted small">{% if b.refunded %}refunded{% elif b.refund_failed %}<span class="text-warn">refund failed</span>{% elif b.status == 'cancelled' %}kept{% else %}paid{% endif %}</div>
           </td>
           <td class="right">
             {% if tab in ('upcoming', 'today') %}

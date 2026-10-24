@@ -63,7 +63,13 @@ def paid_intent(session_id):
     return session.payment_intent if session.payment_status == "paid" else None
 
 
-def refund(payment_intent):
+def refund(payment_intent, booking_id):
+    """Refund a payment in full. Returns the refund id (or a demo id)."""
     if not payment_intent or not enabled() or payment_intent.startswith("demo_"):
-        return
-    _client().Refund.create(payment_intent=payment_intent)
+        return f"demo_refund_{booking_id}"
+    # The idempotency key means a retry can never refund the same booking twice.
+    result = _client().Refund.create(
+        payment_intent=payment_intent,
+        idempotency_key=f"refund-{booking_id}",
+    )
+    return result.id

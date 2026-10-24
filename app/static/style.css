@@ -419,3 +419,9 @@ td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
   main.fit > .container { height: auto; }
   .fill > .scroll { max-height: 70vh; }
 }
+
+.refund-card { margin-top: 18px; text-align: left; }
+.refund-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.refund-head strong { font-size: 1.2rem; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85rem; }
+.text-warn { color: var(--accent-dark); font-weight: 600; }

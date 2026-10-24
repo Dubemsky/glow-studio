@@ -12,7 +12,12 @@
   {% if upcoming %}
   <a class="btn ghost small" href="{{ url_for('public.cancel', token=b.cancel_token) }}">Manage</a>
   {% elif b.status == 'cancelled' %}
-  <span class="status off">Cancelled</span>
+  <div class="right">
+    <span class="status off">Cancelled</span>
+    <div class="muted small">
+      {% if b.refunded %}{{ euros(b.refunded_cents or b.deposit_cents) }} refunded{% elif b.refund_failed %}Refund pending{% else %}Deposit kept{% endif %}
+    </div>
+  </div>
   {% else %}
   <span class="status done">Completed</span>
   {% endif %}

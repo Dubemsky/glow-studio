@@ -37,7 +37,7 @@
   <div class="status-icon neutral">!</div>
   <h1>This booking isn't active</h1>
   <p class="lead">
-    {% if booking.refunded %}Your deposit has been refunded.{% else %}The time was released before payment was completed.{% endif %}
+    {% if booking.refunded %}Your {{ euros(booking.deposit_cents) }} deposit has been refunded to your card. It usually shows within 5–10 working days.{% elif booking.refund_failed %}The studio will refund your deposit shortly.{% else %}The time was released before payment was completed.{% endif %}
   </p>
   <div class="actions">
     <a class="btn" href="{{ url_for('public.book', service_id=booking.service_id) }}">Book again</a>

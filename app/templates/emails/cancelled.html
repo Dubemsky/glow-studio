@@ -4,7 +4,8 @@
 <h1 style="margin:0 0 8px;font-family:Georgia,serif;font-weight:normal;font-size:26px;">Your booking is cancelled</h1>
 <p style="margin:0;color:#7a706a;line-height:1.6;">
   {% if by_admin %}We're sorry, the studio had to cancel this appointment.{% endif %}
-  {% if booking.refunded %}Your {{ deposit }} deposit has been refunded. It can take 5–10 days to appear on your statement.
+  {% if booking.refunded %}Your {{ deposit }} deposit has been refunded to the card you paid with. It usually shows on your statement within 5–10 working days.
+  {% elif booking.refund_failed %}We couldn't refund your {{ deposit }} deposit automatically. The studio has been notified and will refund it to your card shortly.
   {% else %}As this was within {{ studio.FREE_CANCEL_HOURS }} hours of the appointment, the deposit isn't refundable.{% endif %}
 </p>
 {% endblock %}

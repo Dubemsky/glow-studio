@@ -163,3 +163,83 @@ def test_success_page_checks_stripe_when_webhook_is_missing(client, monkeypatch)
     page = client.get(f"/booking/{booking['cancel_token']}").get_data(as_text=True)
     assert "You&#39;re booked" in page or "You're booked" in page
     assert get_db().bookings.find_one()["payment_intent"] == "pi_1"
+
+
+class FakeStripeRefunds:
+    def __init__(self, fail=False):
+        self.calls, self.fail = [], fail
+
+    def create(self, **kwargs):
+        if self.fail:
+            raise RuntimeError("Stripe is down")
+        self.calls.append(kwargs)
+        return type("Refund", (), {"id": f"re_test_{len(self.calls)}"})()
+
+
+@pytest.fixture
+def live_stripe(app, monkeypatch):
+    import stripe
+
+    app.config["STRIPE_SECRET_KEY"] = "sk_test_fake"
+    refunds = FakeStripeRefunds()
+    monkeypatch.setattr(stripe, "Refund", refunds)
+    return refunds
+
+
+def paid_booking(hours_ahead=None):
+    service, day, start = first_slot()
+    booking = bookings.confirm(bookings.create_pending(service, start, "Aoife", "aoife@example.com")["_id"], "pi_live_1")
+    if hours_ahead is not None:
+        get_db().bookings.update_one({"_id": booking["_id"]}, {"$set": {"start": utcnow() + timedelta(hours=hours_ahead)}})
+    return bookings.get_booking(booking["_id"])
+
+
+def test_customer_cancel_refunds_through_stripe_and_shows_it(client, live_stripe):
+    booking = paid_booking()
+    notify.outbox.clear()
+
+    page = client.post(f"/cancel/{booking['cancel_token']}").get_data(as_text=True)
+
+    assert live_stripe.calls == [{"payment_intent": "pi_live_1", "idempotency_key": f"refund-{booking['_id']}"}]
+    saved = get_db().bookings.find_one({"_id": booking["_id"]})
+    assert saved["refunded"] and saved["refund_id"] == "re_test_1" and saved["refunded_cents"] == 1000
+    assert "Refunded" in page and "€10" in page and "re_test_1" in page
+    assert notify.outbox[-1]["subject"].startswith("Booking cancelled")
+
+    link = client.post("/my-bookings", data={"email": "aoife@example.com"}).get_data(as_text=True)
+    mine = client.get(link.split('href="http://localhost')[1].split('"')[0].split("/", 1)[1]).get_data(as_text=True)
+    assert "€10 refunded" in mine
+
+
+def test_cancelling_twice_never_refunds_twice(client, live_stripe):
+    booking = paid_booking()
+    client.post(f"/cancel/{booking['cancel_token']}")
+    client.post(f"/cancel/{booking['cancel_token']}")
+    assert len(live_stripe.calls) == 1
+
+
+def test_late_cancel_keeps_deposit(client, live_stripe):
+    booking = paid_booking(hours_ahead=3)
+    page = client.post(f"/cancel/{booking['cancel_token']}").get_data(as_text=True)
+    assert live_stripe.calls == []
+    assert "No refund" in page
+
+
+def test_admin_cancel_always_refunds(client, app, live_stripe):
+    booking = paid_booking(hours_ahead=3)
+    client.post("/admin/login", data={"password": app.config["ADMIN_PASSWORD"]})
+    client.post(f"/admin/bookings/{booking['_id']}/cancel")
+    assert len(live_stripe.calls) == 1
+    assert get_db().bookings.find_one({"_id": booking["_id"]})["refunded"]
+
+
+def test_failed_refund_is_flagged_not_crashed(client, live_stripe):
+    live_stripe.fail = True
+    booking = paid_booking()
+
+    response = client.post(f"/cancel/{booking['cancel_token']}")
+    saved = get_db().bookings.find_one({"_id": booking["_id"]})
+
+    assert response.status_code == 200
+    assert saved["status"] == "cancelled" and saved["refund_failed"] and not saved["refunded"]
+    assert "Refund pending" in response.get_data(as_text=True)

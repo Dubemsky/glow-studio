@@ -3,6 +3,7 @@ import secrets
 from datetime import datetime, timedelta
 
 from bson import ObjectId
+from flask import current_app
 from pymongo import ReturnDocument
 from pymongo.errors import DuplicateKeyError
 
@@ -124,11 +125,8 @@ def confirm(booking_id, payment_intent=None):
     if booking["status"] == "expired":
         # Paid after the hold ran out: keep it if the slot is still free, otherwise refund.
         if not reserve_blocks(booking_id, booking["start"], booking["minutes"]):
-            payments.refund(payment_intent)
-            db.bookings.update_one(
-                {"_id": booking_id},
-                {"$set": {"payment_intent": payment_intent, "refunded": True}},
-            )
+            db.bookings.update_one({"_id": booking_id}, {"$set": {"payment_intent": payment_intent}})
+            issue_refund({**booking, "payment_intent": payment_intent})
             return None
 
     soon = booking["start"] - utcnow() < timedelta(hours=24)
@@ -163,16 +161,39 @@ def cancel(booking, by_admin=False):
 
     was_paid = booking["status"] == "confirmed"
     if was_paid and (by_admin or refund_eligible(booking)):
-        payments.refund(booking["payment_intent"])
-        updated = db.bookings.find_one_and_update(
-            {"_id": booking["_id"]},
-            {"$set": {"refunded": True}},
-            return_document=ReturnDocument.AFTER,
-        )
+        updated = issue_refund(booking)
 
     if was_paid:
         notify.booking_cancelled(updated, by_admin)
     return updated
+
+
+def issue_refund(booking):
+    db = get_db()
+    try:
+        refund_id = payments.refund(booking["payment_intent"], booking["_id"])
+    except Exception:
+        # The cancellation still stands; the studio is told to refund by hand.
+        current_app.logger.exception("Refund failed for booking %s", booking["_id"])
+        notify.refund_failed(booking)
+        return db.bookings.find_one_and_update(
+            {"_id": booking["_id"]},
+            {"$set": {"refund_failed": True}},
+            return_document=ReturnDocument.AFTER,
+        )
+    return db.bookings.find_one_and_update(
+        {"_id": booking["_id"]},
+        {
+            "$set": {
+                "refunded": True,
+                "refund_failed": False,
+                "refund_id": refund_id,
+                "refunded_cents": booking["deposit_cents"],
+                "refunded_at": utcnow(),
+            }
+        },
+        return_document=ReturnDocument.AFTER,
+    )
 
 
 def refund_eligible(booking):

@@ -8,10 +8,28 @@
   <div class="center">
     <div class="status-icon neutral">✕</div>
     <h1>Booking cancelled</h1>
-    <p class="lead">
-      {% if booking.refunded %}Your {{ euros(booking.deposit_cents) }} deposit has been refunded. It can take 5–10 days to appear on your statement.
-      {% else %}As this was within {{ studio.FREE_CANCEL_HOURS }} hours of your appointment, the deposit isn't refundable.{% endif %}
-    </p>
+    <p class="lead">Your {{ booking.service_name }} on {{ booking.start | local }} has been cancelled.</p>
+
+    <div class="card refund-card">
+      {% if booking.refunded %}
+      <div class="refund-head"><span class="status on">Refunded</span><strong>{{ euros(booking.refunded_cents or booking.deposit_cents) }}</strong></div>
+      <div class="summary">
+        <div class="summary-row"><span>Refunded on</span><span>{{ booking.refunded_at | local('%-d %B %Y') if booking.refunded_at else '—' }}</span></div>
+        <div class="summary-row"><span>To</span><span>The card you paid with</span></div>
+        {% if booking.refund_id and not booking.refund_id.startswith('demo_') %}
+        <div class="summary-row"><span>Reference</span><span class="mono">{{ booking.refund_id }}</span></div>
+        {% endif %}
+      </div>
+      <p class="muted small" style="margin-top: 12px">Refunds usually show on your statement within 5–10 working days.</p>
+      {% elif booking.refund_failed %}
+      <div class="refund-head"><span class="status off">Refund pending</span><strong>{{ euros(booking.deposit_cents) }}</strong></div>
+      <p class="muted small">We couldn't process your refund automatically. The studio has been notified and will refund your deposit to your card shortly.</p>
+      {% else %}
+      <div class="refund-head"><span class="status done">No refund</span><strong>{{ euros(booking.deposit_cents) }}</strong></div>
+      <p class="muted small">As this was cancelled within {{ studio.FREE_CANCEL_HOURS }} hours of the appointment, the deposit isn't refundable.</p>
+      {% endif %}
+    </div>
+
     <div class="actions">
       <a class="btn" href="{{ url_for('public.book', service_id=booking.service_id) }}">Book another time</a>
     </div>

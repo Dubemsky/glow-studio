@@ -72,7 +72,12 @@ def booking_confirmed(booking):
 def booking_cancelled(booking, by_admin):
     ctx = _context(booking)
     send_email(booking["email"], f"Booking cancelled: {booking['service_name']}, {ctx['when']}", "cancelled", by_admin=by_admin, **ctx)
-    refund = "deposit refunded" if booking["refunded"] else "deposit kept"
+    if booking.get("refunded"):
+        refund = "deposit refunded"
+    elif booking.get("refund_failed"):
+        refund = "REFUND FAILED, refund manually in Stripe"
+    else:
+        refund = "deposit kept"
     who = "by the studio" if by_admin else "by the customer"
     send_slack(f":x: Cancelled {who}: *{booking['name']}*, {booking['service_name']}, {ctx['when']} ({refund})")
 
@@ -84,3 +89,11 @@ def reminder(booking):
 
 def bookings_link(email, url):
     send_email(email, f"Your bookings at {studio.NAME}", "my_bookings", url=url, studio=studio)
+
+
+def refund_failed(booking):
+    ctx = _context(booking)
+    send_slack(
+        f":warning: Refund failed for *{booking['name']}* ({booking['email']}), "
+        f"{booking['service_name']}, {ctx['when']}. Please refund {ctx['deposit']} manually in Stripe."
+    )
