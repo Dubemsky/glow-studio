@@ -58,7 +58,9 @@
           </td>
           <td class="right">
             {% if tab in ('upcoming', 'today') %}
-            <form method="post" action="{{ url_for('admin.cancel', booking_id=b._id) }}" onsubmit="return confirm('Cancel this booking and refund the deposit?')">
+            <form method="post" action="{{ url_for('admin.cancel', booking_id=b._id) }}" data-confirm-title="Cancel {{ b.name }}'s booking?"
+                  data-confirm-text="{{ b.service_name }} on {{ b.start | local('%a %-d %b, %H:%M') }}. The {{ euros(b.deposit_cents) }} deposit will be refunded."
+                  data-confirm-button="Cancel and refund">
               <button class="btn ghost small" type="submit">Cancel</button>
             </form>
             {% endif %}

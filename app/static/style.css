@@ -425,3 +425,19 @@ td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .refund-head strong { font-size: 1.2rem; }
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85rem; }
 .text-warn { color: var(--accent-dark); font-weight: 600; }
+
+.modal {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px;
+  width: min(380px, calc(100vw - 32px));
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 20px 50px rgba(43, 37, 34, 0.18);
+}
+.modal::backdrop { background: rgba(43, 37, 34, 0.35); }
+.modal h3 { font-size: 1.2rem; }
+.modal p { margin-top: 6px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+.btn.danger { background: var(--accent-dark); }
+.btn.danger:hover { background: #73402f; }

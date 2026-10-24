@@ -52,7 +52,10 @@
     {% else %}
     <p class="small">Your appointment is less than {{ studio.FREE_CANCEL_HOURS }} hours away, so the deposit won't be refunded if you cancel.</p>
     {% endif %}
-    <form method="post" style="margin-top: 14px" onsubmit="return confirm('Cancel this booking?')">
+    <form method="post" style="margin-top: 14px"
+          data-confirm-title="Cancel this booking?"
+          data-confirm-text="{% if refundable %}Your {{ euros(booking.deposit_cents) }} deposit will be refunded to your card.{% else %}Your appointment is less than {{ studio.FREE_CANCEL_HOURS }} hours away, so the deposit won't be refunded.{% endif %}"
+          data-confirm-button="Yes, cancel">
       <button class="btn ghost block" type="submit">Cancel booking</button>
     </form>
     {% endif %}

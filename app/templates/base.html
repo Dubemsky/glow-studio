@@ -39,11 +39,47 @@
     </div>
   </main>
 
+  <dialog class="modal" id="confirm-modal">
+    <form method="dialog">
+      <h3 data-modal-title></h3>
+      <p class="muted small" data-modal-text></p>
+      <div class="modal-actions">
+        <button class="btn ghost small" value="cancel">Keep booking</button>
+        <button class="btn small danger" value="ok" data-modal-ok></button>
+      </div>
+    </form>
+  </dialog>
+
   <footer>
     <div class="container">
       <span>{{ studio.ADDRESS }}</span>
       <span>Tue–Sat, 9:00–18:00</span>
     </div>
   </footer>
+  <script>
+    // Forms with data-confirm-* ask in a small modal before submitting.
+    (() => {
+      const modal = document.getElementById("confirm-modal");
+      let pending = null;
+      document.addEventListener("submit", (event) => {
+        const form = event.target;
+        if (!form.dataset.confirmTitle || form.dataset.confirmed) return;
+        event.preventDefault();
+        pending = form;
+        modal.querySelector("[data-modal-title]").textContent = form.dataset.confirmTitle;
+        modal.querySelector("[data-modal-text]").textContent = form.dataset.confirmText || "";
+        modal.querySelector("[data-modal-ok]").textContent = form.dataset.confirmButton || "Confirm";
+        modal.showModal();
+      });
+      modal.addEventListener("click", (event) => { if (event.target === modal) modal.close("cancel"); });
+      modal.addEventListener("close", () => {
+        if (modal.returnValue === "ok" && pending) {
+          pending.dataset.confirmed = "1";
+          pending.requestSubmit();
+        }
+        pending = null;
+      });
+    })();
+  </script>
 </body>
 </html>
