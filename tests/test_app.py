@@ -243,3 +243,23 @@ def test_failed_refund_is_flagged_not_crashed(client, live_stripe):
     assert response.status_code == 200
     assert saved["status"] == "cancelled" and saved["refund_failed"] and not saved["refunded"]
     assert "Refund pending" in response.get_data(as_text=True)
+
+
+def test_owner_gets_booking_and_cancellation_emails(client, app):
+    app.config["OWNER_EMAIL"] = "owner@glowstudio.ie"
+    booking = paid_booking()
+    client.post(f"/cancel/{booking['cancel_token']}")
+
+    owner_subjects = [m["subject"] for m in notify.outbox if m["to"] == "owner@glowstudio.ie"]
+    assert owner_subjects[0].startswith("New booking: Aoife")
+    assert owner_subjects[1].startswith("Cancelled: Aoife")
+
+
+def test_owner_is_told_when_a_refund_fails(client, app, live_stripe):
+    app.config["OWNER_EMAIL"] = "owner@glowstudio.ie"
+    live_stripe.fail = True
+    booking = paid_booking()
+    client.post(f"/cancel/{booking['cancel_token']}")
+
+    owner_subjects = [m["subject"] for m in notify.outbox if m["to"] == "owner@glowstudio.ie"]
+    assert any(s.startswith("Action needed: refund failed") for s in owner_subjects)

@@ -20,6 +20,6 @@ class Config:
     RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
     EMAIL_FROM = os.getenv("EMAIL_FROM", "Glow Studio <onboarding@resend.dev>")
 
-    SLACK_WEBHOOK_URL = os.getenv("SLACK_WEBHOOK_URL", "")
+    OWNER_EMAIL = os.getenv("OWNER_EMAIL", "")
 
     SCHEDULER_ENABLED = os.getenv("SCHEDULER_ENABLED", "true").lower() == "true"

@@ -52,34 +52,49 @@ def send_email(to, subject, template, **context):
         current_app.logger.exception("Email to %s failed", to)
 
 
-def send_slack(text):
-    url = current_app.config["SLACK_WEBHOOK_URL"]
-    if not url:
-        current_app.logger.info("Slack (demo): %s", text)
+def email_owner(subject, headline, message, booking):
+    owner = current_app.config["OWNER_EMAIL"]
+    if not owner:
+        current_app.logger.info("Owner alert (no OWNER_EMAIL set): %s", subject)
         return
-    try:
-        requests.post(url, json={"text": text}, timeout=10).raise_for_status()
-    except requests.RequestException:
-        current_app.logger.exception("Slack alert failed")
+    send_email(
+        owner,
+        subject,
+        "owner_alert",
+        headline=headline,
+        message=message,
+        dashboard_url=f"{site_url()}/admin",
+        **_context(booking),
+    )
 
 
 def booking_confirmed(booking):
     ctx = _context(booking)
     send_email(booking["email"], f"You're booked: {booking['service_name']}, {ctx['when']}", "confirmed", **ctx)
-    send_slack(f":sparkles: New booking: *{booking['name']}*, {booking['service_name']}, {ctx['when']} ({ctx['deposit']} deposit paid)")
+    email_owner(
+        f"New booking: {booking['name']}, {booking['service_name']}, {ctx['when']}",
+        "New booking",
+        f"{booking['name']} ({booking['email']}) booked and paid the {ctx['deposit']} deposit.",
+        booking,
+    )
 
 
 def booking_cancelled(booking, by_admin):
     ctx = _context(booking)
     send_email(booking["email"], f"Booking cancelled: {booking['service_name']}, {ctx['when']}", "cancelled", by_admin=by_admin, **ctx)
     if booking.get("refunded"):
-        refund = "deposit refunded"
+        refund = f"The {ctx['deposit']} deposit was refunded."
     elif booking.get("refund_failed"):
-        refund = "REFUND FAILED, refund manually in Stripe"
+        refund = f"The refund failed. Please refund the {ctx['deposit']} deposit manually in Stripe."
     else:
-        refund = "deposit kept"
-    who = "by the studio" if by_admin else "by the customer"
-    send_slack(f":x: Cancelled {who}: *{booking['name']}*, {booking['service_name']}, {ctx['when']} ({refund})")
+        refund = f"Cancelled within {studio.FREE_CANCEL_HOURS} hours, so the {ctx['deposit']} deposit was kept."
+    who = "You cancelled" if by_admin else f"{booking['name']} cancelled"
+    email_owner(
+        f"Cancelled: {booking['name']}, {booking['service_name']}, {ctx['when']}",
+        "Booking cancelled",
+        f"{who} this booking. {refund} The time is free again.",
+        booking,
+    )
 
 
 def reminder(booking):
@@ -93,7 +108,10 @@ def bookings_link(email, url):
 
 def refund_failed(booking):
     ctx = _context(booking)
-    send_slack(
-        f":warning: Refund failed for *{booking['name']}* ({booking['email']}), "
-        f"{booking['service_name']}, {ctx['when']}. Please refund {ctx['deposit']} manually in Stripe."
+    email_owner(
+        f"Action needed: refund failed for {booking['name']}",
+        "Refund failed",
+        f"Stripe couldn't refund {booking['name']}'s {ctx['deposit']} deposit ({booking['email']}). "
+        "Please refund it manually in your Stripe dashboard.",
+        booking,
     )

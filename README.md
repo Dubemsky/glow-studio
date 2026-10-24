@@ -1,6 +1,6 @@
 # Glow Studio
 
-Online booking and deposits for a small beauty and wellness studio. Customers pick a treatment and a time, pay a €10 deposit with Stripe, and get a confirmation email. The owner gets a Slack alert and manages everything from a simple dashboard.
+Online booking and deposits for a small beauty and wellness studio. Customers pick a treatment and a time, pay a €10 deposit with Stripe, and get a confirmation email. The owner gets an email for every booking and cancellation, and manages everything from a simple dashboard.
 
 ![Booking page](docs/booking.png)
 
@@ -12,11 +12,11 @@ Online booking and deposits for a small beauty and wellness studio. Customers pi
 - **Unpaid holds expire**: if checkout isn't finished within 30 minutes, the time is released
 - **Self-service cancellation**: a link in the confirmation email; cancel 24+ hours ahead and the deposit is refunded automatically through Stripe
 - **Emails**: confirmation, 24-hour reminder and cancellation (Resend)
-- **Slack alerts** for new bookings and cancellations
+- **Owner email alerts** for new bookings, cancellations and any refund that needs attention
 - **Add to calendar** link
 - **Find my booking**: customers enter their email and get a one-hour link listing their bookings, no account needed
 - **Owner dashboard**: bookings by tab (upcoming, today, past, cancelled) with search and filters, a weekly overview, and one-click cancel and refund
-- **Demo mode**: runs with no keys at all, simulating payments, emails and Slack
+- **Demo mode**: runs with no keys at all, simulating payments and emails
 
 | | |
 |---|---|
@@ -25,7 +25,7 @@ Online booking and deposits for a small beauty and wellness studio. Customers pi
 
 ## Tech
 
-Python, Flask, MongoDB, Stripe, Resend, Slack webhooks, APScheduler, plain CSS. Tested with pytest.
+Python, Flask, MongoDB, Stripe, Resend, APScheduler, plain CSS. Tested with pytest.
 
 ## Run it locally
 
@@ -50,7 +50,7 @@ All settings live in environment variables (see `.env.example`).
 | `STRIPE_SECRET_KEY` | Stripe dashboard → Developers → API keys (use the test key) |
 | `STRIPE_WEBHOOK_SECRET` | Stripe dashboard → Developers → Webhooks, after adding the endpoint below |
 | `RESEND_API_KEY` | resend.com → API Keys |
-| `SLACK_WEBHOOK_URL` | Slack → Apps → Incoming Webhooks |
+| `OWNER_EMAIL` | The studio owner's email, for booking and cancellation alerts |
 | `BASE_URL` | Your live site address, used in email links (optional locally) |
 | `SECRET_KEY`, `ADMIN_PASSWORD` | Any long random strings you choose |
 
